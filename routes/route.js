@@ -5,37 +5,6 @@ const jwt = require("jsonwebtoken"); // Import jwt for token decoding
 
 let token = process.env.TOKEN; // Declare token variable (let instead of const to allow reassignment)
 
-// Function to update the token
-const updateToken = async () => {
-  try {
-    const response = await axios.post("https://zoom.us/oauth/token", null, {
-      params: {
-        grant_type: "refresh_token",
-        refresh_token: process.env.REFRESH_TOKEN,
-      },
-      headers: {
-        Authorization: `Basic ${Buffer.from(
-          `${process.env.ZOOM_API_KEY}:${process.env.ZOOM_API_SECRET}`
-        ).toString(`base64`)}`,
-      },
-    });
-    token = response.data.access_token; // Update the token
-    console.log("Token updated:", token);
-  } catch (error) {
-    console.error("Error updating token:", error);
-  }
-};
-
-// Middleware to check token expiration before handling requests
-const checkTokenExpiration = async (req, res, next) => {
-  const currentTime = Date.now() / 1000; // Convert to seconds
-  const decodedToken = jwt.decode(token);
-  if (decodedToken.exp < currentTime) {
-    // Token expired, update it
-    await updateToken();
-  }
-  next();
-};
 
 // Route to handle OAuth authorization code
 router.get("/", async (req, res) => {
